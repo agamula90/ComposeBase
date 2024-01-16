@@ -1,6 +1,7 @@
 package ua.com.underlake.ui
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -22,6 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import ua.com.underlake.R
@@ -31,6 +33,8 @@ data class NavDrawerItem(
     @DrawableRes val icon: Int,
     val text: String,
 )
+
+private val DRAWER_WIDTH = 360.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +49,9 @@ fun NavDrawerDecorated(
     content: @Composable (String) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val drawerWidth = with(LocalDensity.current) { DRAWER_WIDTH.toPx() }
+    val expansionOffset by drawerState.offset
+    val expansionProgress = -expansionOffset / drawerWidth
     val coroutineScope = rememberCoroutineScope()
     CenterAlignedTopAppBar(
         modifier = Modifier.statusBarsPadding(),
@@ -54,9 +61,14 @@ fun NavDrawerDecorated(
         navigationIcon = {
             HamburgerMenuButton(
                 collapsed = !drawerState.isOpen,
+                expansionProgress = expansionProgress,
                 onCollapseChange = {
                     coroutineScope.launch {
-                        if (drawerState.isOpen) drawerState.close() else drawerState.open()
+                        val targetState = when {
+                            drawerState.isOpen -> DrawerValue.Closed
+                            else -> DrawerValue.Open
+                        }
+                        drawerState.animateTo(targetState, tween(700))
                     }
                 }
             )
