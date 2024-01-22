@@ -6,7 +6,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,14 +13,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,40 +32,18 @@ import kotlin.math.sqrt
 
 private val MAX_RIPPLE_RADIUS = 60.dp
 
-data class BottomNavItem(
+data class BottomBarItem(
     val destination: String,
     @DrawableRes val icon: Int,
     val text: String
 )
 
 @Composable
-fun BottomNavBarDecorated(
-    bottomNavItems: List<BottomNavItem> = listOf(
-        BottomNavItem("tab1", R.drawable.location, "Tab 1"),
-        BottomNavItem("tab2", R.drawable.airplane, "Tab 2"),
-        BottomNavItem("tab3", R.drawable.anchor, "Tab 3"),
-    ),
-    content: @Composable (String, PaddingValues) -> Unit
-) {
-    var selectedDestination by rememberSaveable(bottomNavItems) {
-        mutableStateOf(bottomNavItems[0].destination)
-    }
-    Scaffold(bottomBar = {
-        BottomNavBar(
-            bottomNavItems = bottomNavItems,
-            activeDestinationId = selectedDestination,
-            onDestinationChange = { selectedDestination = it })
-    }) {
-        content(selectedDestination, it)
-    }
-}
-
-@Composable
-fun BottomNavBar(
+fun BottomBar(
     height: Dp = 54.dp,
     itemColor: Color = MaterialTheme.colorScheme.primary,
     activeItemColor: Color = MaterialTheme.colorScheme.secondary,
-    bottomNavItems: List<BottomNavItem>,
+    bottomBarItems: List<BottomBarItem>,
     activeDestinationId: String,
     onDestinationChange: (String) -> Unit
 ) {
@@ -83,14 +55,14 @@ fun BottomNavBar(
             .clip(RectangleShape)
     ) {
         val rippleRadius = with(LocalDensity.current) {
-            val itemWidth = maxWidth.toPx() / (2 * bottomNavItems.size)
+            val itemWidth = maxWidth.toPx() / (2 * bottomBarItems.size)
             val rippleHeight = maxHeight.toPx() / 2
             val preferredRippleRadius =
                 sqrt(itemWidth * itemWidth + rippleHeight * rippleHeight).toDp()
             min(preferredRippleRadius, MAX_RIPPLE_RADIUS)
         }
         Row {
-            for (destination in bottomNavItems) {
+            for (destination in bottomBarItems) {
                 val itemTint = when (destination.destination) {
                     activeDestinationId -> activeItemColor
                     else -> itemColor
@@ -114,7 +86,7 @@ fun BottomNavBar(
 fun BottomNavBarItem(
     modifier: Modifier,
     tint: Color,
-    destination: BottomNavItem,
+    destination: BottomBarItem,
     rippleRadius: Dp,
     onDestinationChange: (String) -> Unit
 ) {
@@ -139,15 +111,15 @@ fun BottomNavBarItem(
 @Preview(showSystemUi = true)
 @Composable
 fun BottomNavBarPreview() {
-    val bottomNavItems = listOf(
-        BottomNavItem("tab1", R.drawable.location, "Tab 1"),
-        BottomNavItem("tab2", R.drawable.airplane, "Tab 2"),
-        BottomNavItem("tab3", R.drawable.anchor, "Tab 3"),
+    val bottomBarItems = listOf(
+        BottomBarItem("tab1", R.drawable.location, "Tab 1"),
+        BottomBarItem("tab2", R.drawable.airplane, "Tab 2"),
+        BottomBarItem("tab3", R.drawable.anchor, "Tab 3"),
     )
     AppTheme {
-        BottomNavBar(
-            bottomNavItems = bottomNavItems,
-            activeDestinationId = bottomNavItems[0].destination,
+        BottomBar(
+            bottomBarItems = bottomBarItems,
+            activeDestinationId = bottomBarItems[0].destination,
             onDestinationChange = {}
         )
     }

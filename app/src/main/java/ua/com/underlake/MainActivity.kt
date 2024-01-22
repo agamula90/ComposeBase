@@ -6,38 +6,38 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import ua.com.underlake.ui.AppTheme
-import ua.com.underlake.ui.BottomNavBarDecorated
-import ua.com.underlake.ui.NavDrawerDecorated
-import ua.com.underlake.ui.helper.FeaturesRow
+import ua.com.underlake.ui.BottomBarItem
+import ua.com.underlake.ui.NavDrawerItem
+import ua.com.underlake.ui.NavHostWithBottomBar
+import ua.com.underlake.ui.NavHostWithNavDrawer
+import ua.com.underlake.ui.main.FeaturesRow
+import ua.com.underlake.ui.navDrawerRootDestinationTransition
+import ua.com.underlake.ui.dog.DogsScreen
+import ua.com.underlake.ui.dog.details.DogDetailsScreen
+import ua.com.underlake.ui.main.Greeting
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
         setContent {
+            val navController = rememberNavController()
             AppTheme {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                ) {
-                    val features = listOf("bottomNavBar", "navDrawer")
+                Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
+                    val features = listOf("navDrawer", "bottomNavBar")
                     var checkedFeature by rememberSaveable { mutableStateOf(features[0]) }
                     FeaturesRow(
                         features = features,
@@ -45,32 +45,8 @@ class MainActivity : ComponentActivity() {
                         onFeatureCheckChange = { feature -> checkedFeature = feature }
                     )
                     when (checkedFeature) {
-                        "bottomNavBar" -> {
-                            BottomNavBarDecorated { destinationId, paddingValues ->
-                                Greeting(name = destinationId)
-                            }
-                        }
-
-                        "navDrawer" -> {
-                            NavDrawerDecorated(
-                                navDrawerItemIcon = { item, colorTint ->
-                                    Icon(
-                                        painter = painterResource(id = item.icon),
-                                        contentDescription = "",
-                                        tint = colorTint
-                                    )
-                                },
-                                navDrawerItemLabel = { item, colorTint ->
-                                    Text(
-                                        text = item.text,
-                                        color = colorTint
-                                    )
-                                },
-                                content = {
-                                    Greeting(name = it)
-                                }
-                            )
-                        }
+                        "bottomNavBar" -> MainNavHostWithBottomBar(navController = navController)
+                        "navDrawer" -> MainNavHostWithDrawer(navController = navController)
                     }
                 }
             }
@@ -79,36 +55,78 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Column {
-        Text(
-            text = "Hello $name!",
-            modifier = modifier
-        )
-        var checked by remember { mutableStateOf(true) }
-        val thumbContent: @Composable (() -> Unit)? = when {
-            checked -> {
-                {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "checked"
-                    )
-                }
-            }
-            else -> null
+fun MainNavHostWithDrawer(navController: NavHostController) {
+    NavHostWithNavDrawer(
+        navDrawerItems = listOf(
+            NavDrawerItem("tab1", R.drawable.location, "Tab 1"),
+            NavDrawerItem("tab2", R.drawable.airplane, "Tab 2"),
+            NavDrawerItem("tab3", R.drawable.anchor, "Tab 3")
+        ),
+        navController = navController
+    ) {
+        composable(
+            route = "tab1",
+            enterTransition = navDrawerRootDestinationTransition()
+        ) {
+            DogsScreen(navigateDogDetails = { navController.navigate("dog/${it}") })
         }
-        Switch(
-            checked = checked,
-            onCheckedChange = { checked = it },
-            thumbContent = thumbContent
-        )
+        composable(
+            route = "tab2",
+            enterTransition = navDrawerRootDestinationTransition()
+        ) {
+            Greeting(name = "Tab 2")
+        }
+        composable(
+            route = "tab3",
+            enterTransition = navDrawerRootDestinationTransition()
+        ) {
+            Greeting(name = "Tab 3")
+        }
+
+        composable(
+            route = "dog/{dogId}",
+            arguments = listOf(navArgument("dogId") {
+                type = NavType.StringType
+            })
+        ) {
+            DogDetailsScreen()
+        }
     }
 }
 
-@Preview(showSystemUi = true)
 @Composable
-fun GreetingPreview() {
-    AppTheme {
-        Greeting("Android")
+fun MainNavHostWithBottomBar(navController: NavHostController) {
+    NavHostWithBottomBar(
+        navController = navController,
+        bottomBarItems = listOf(
+            BottomBarItem("tab1", R.drawable.location, "Tab 1"),
+            BottomBarItem("tab2", R.drawable.airplane, "Tab 2"),
+            BottomBarItem("tab3", R.drawable.anchor, "Tab 3"),
+        )
+    ) {
+        composable(
+            route = "tab1"
+        ) {
+            DogsScreen(navigateDogDetails = { navController.navigate("dog/${it}") })
+        }
+        composable(
+            route = "tab2"
+        ) {
+            Greeting(name = "Tab 2")
+        }
+        composable(
+            route = "tab3"
+        ) {
+            Greeting(name = "Tab 3")
+        }
+
+        composable(
+            route = "dog/{dogId}",
+            arguments = listOf(navArgument("dogId") {
+                type = NavType.StringType
+            })
+        ) {
+            DogDetailsScreen()
+        }
     }
 }

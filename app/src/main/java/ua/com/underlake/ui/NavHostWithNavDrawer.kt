@@ -1,13 +1,18 @@
 package ua.com.underlake.ui
 
+import android.os.Parcelable
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -16,42 +21,48 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
 import kotlinx.coroutines.launch
-import ua.com.underlake.R
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class NavDrawerItem(
     val destination: String,
     @DrawableRes val icon: Int,
     val text: String,
-)
+): Parcelable
 
 private val DRAWER_WIDTH = 360.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NavDrawerDecorated(
-    navDrawerItems: List<NavDrawerItem> = listOf(
-        NavDrawerItem("tab1", R.drawable.location, "Tab 1"),
-        NavDrawerItem("tab2", R.drawable.airplane, "Tab 2"),
-        NavDrawerItem("tab3", R.drawable.anchor, "Tab 3")
-    ),
-    navDrawerItemIcon: @Composable (NavDrawerItem, Color) -> Unit,
-    navDrawerItemLabel: @Composable (NavDrawerItem, Color) -> Unit,
-    content: @Composable (String) -> Unit
+fun NavHostWithNavDrawer(
+    navController: NavHostController,
+    navDrawerItems: List<NavDrawerItem>,
+    navGraph: NavGraphBuilder.() -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val drawerWidth = with(LocalDensity.current) { DRAWER_WIDTH.toPx() }
-    val expansionOffset by drawerState.offset
-    val expansionProgress = -expansionOffset / drawerWidth
+    val expansionProgress by remember {
+        derivedStateOf {
+            val value = (-drawerState.offset.value / drawerWidth * 20).toInt()
+            value / 20f
+        }
+    }
     val coroutineScope = rememberCoroutineScope()
     CenterAlignedTopAppBar(
         modifier = Modifier.statusBarsPadding(),
@@ -74,9 +85,8 @@ fun NavDrawerDecorated(
             )
         }
     )
-
     var selectedDestination by rememberSaveable(navDrawerItems) {
-        mutableStateOf(navDrawerItems[0].destination)
+        mutableStateOf(navDrawerItems[0])
     }
 
     ModalNavigationDrawer(
@@ -91,35 +101,50 @@ fun NavDrawerDecorated(
                 drawerContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 drawerTonalElevation = 4.dp,
             ) {
-                navDrawerItems.forEach { navDrawerItem ->
+                navDrawerItems.forEachIndexed { index, navDrawerItem ->
                     NavigationDrawerItem(
-                        selected = selectedDestination == navDrawerItem.destination,
+                        selected = selectedDestination == navDrawerItem,
                         onClick = {
-                            selectedDestination = navDrawerItem.destination
-                            coroutineScope.launch { drawerState.close() }
+                            val previousDestination = selectedDestination.destination
+                            selectedDestination = navDrawerItem
+                            coroutineScope.launch {
+                                drawerState.close()
+                                navController.navigate(navDrawerItem.destination) {
+                                    popUpTo(previousDestination) {
+                                        saveState = true
+                                        inclusive = true
+                                    }
+                                    // Avoid multiple copies of the same destination when
+                                    // reselecting the same item
+                                    launchSingleTop = true
+                                    // Restore state when reselecting a previously selected item
+                                    restoreState = true
+                                }
+                            }
                         },
                         icon = {
-                            val colorTint = if (selectedDestination == navDrawerItem.destination) {
+                            val colorTint = if (selectedDestination == navDrawerItem) {
                                 MaterialTheme.colorScheme.onSecondaryContainer
                             } else {
                                 MaterialTheme.colorScheme.onTertiaryContainer
                             }
 
-                            navDrawerItemIcon(
-                                navDrawerItem,
-                                colorTint
+                            Icon(
+                                painter = painterResource(id = navDrawerItem.icon),
+                                contentDescription = "",
+                                tint = colorTint
                             )
                         },
                         label = {
-                            val colorTint = if (selectedDestination == navDrawerItem.destination) {
+                            val colorTint = if (selectedDestination == navDrawerItem) {
                                 MaterialTheme.colorScheme.onSecondaryContainer
                             } else {
                                 MaterialTheme.colorScheme.onTertiaryContainer
                             }
 
-                            navDrawerItemLabel(
-                                navDrawerItem,
-                                colorTint
+                            Text(
+                                text = navDrawerItem.text,
+                                color = colorTint
                             )
                         },
                         colors = NavigationDrawerItemDefaults.colors(
@@ -131,6 +156,23 @@ fun NavDrawerDecorated(
             }
         },
         content = {
-            content(selectedDestination)
+            NavHost(
+                navController = navController,
+                startDestination = navDrawerItems[0].destination,
+                exitTransition = {
+                    fadeOut(animationSpec = tween(400))
+                }
+            ) {
+                navGraph()
+            }
         })
+}
+
+fun navDrawerRootDestinationTransition():  AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition {
+    return {
+        slideIntoContainer(
+            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+            animationSpec = tween(1000)
+        )
+    }
 }

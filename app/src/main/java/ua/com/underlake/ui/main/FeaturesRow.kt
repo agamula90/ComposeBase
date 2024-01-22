@@ -1,4 +1,4 @@
-package ua.com.underlake.ui.helper
+package ua.com.underlake.ui.main
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable

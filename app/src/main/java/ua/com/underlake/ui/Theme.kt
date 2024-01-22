@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import org.koin.compose.KoinContext
 import ua.com.underlake.R
 
 val Typography = Typography(
@@ -58,7 +59,11 @@ fun AppTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        content = {
+            KoinContext {
+                content()
+            }
+        }
     )
 }
 
