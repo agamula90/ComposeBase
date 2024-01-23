@@ -32,7 +32,7 @@ import kotlin.math.sqrt
 
 private val MAX_RIPPLE_RADIUS = 60.dp
 
-data class BottomBarItem(
+class BottomBarItem(
     val destination: String,
     @DrawableRes val icon: Int,
     val text: String

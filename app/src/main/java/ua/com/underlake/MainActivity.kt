@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
@@ -23,10 +24,11 @@ import ua.com.underlake.ui.BottomBarItem
 import ua.com.underlake.ui.NavDrawerItem
 import ua.com.underlake.ui.NavHostWithBottomBar
 import ua.com.underlake.ui.NavHostWithNavDrawer
-import ua.com.underlake.ui.main.FeaturesRow
+import ua.com.underlake.ui.main.ExclusiveFeatures
 import ua.com.underlake.ui.navDrawerRootDestinationTransition
 import ua.com.underlake.ui.dog.DogsScreen
 import ua.com.underlake.ui.dog.details.DogDetailsScreen
+import ua.com.underlake.ui.main.Feature
 import ua.com.underlake.ui.main.Greeting
 
 class MainActivity : ComponentActivity() {
@@ -36,17 +38,21 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             AppTheme {
-                Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
-                    val features = listOf("navDrawer", "bottomNavBar")
-                    var checkedFeature by rememberSaveable { mutableStateOf(features[0]) }
-                    FeaturesRow(
+                Column(modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()) {
+                    val features = listOf(Feature("BottomBar"), Feature("SideDrawer"), Feature("None"))
+                    var checkedFeature by rememberSaveable { mutableStateOf(Feature("None")) }
+                    ExclusiveFeatures(
+                        featuresGroup = "Navigation",
                         features = features,
                         checkedFeature = checkedFeature,
                         onFeatureCheckChange = { feature -> checkedFeature = feature }
                     )
                     when (checkedFeature) {
-                        "bottomNavBar" -> MainNavHostWithBottomBar(navController = navController)
-                        "navDrawer" -> MainNavHostWithDrawer(navController = navController)
+                        Feature("BottomBar") -> MainNavHostWithBottomBar(navController = navController)
+                        Feature("SideDrawer") -> MainNavHostWithDrawer(navController = navController)
+                        Feature("None") -> MainNavHost(navController = navController)
                     }
                 }
             }
@@ -120,6 +126,25 @@ fun MainNavHostWithBottomBar(navController: NavHostController) {
             Greeting(name = "Tab 3")
         }
 
+        composable(
+            route = "dog/{dogId}",
+            arguments = listOf(navArgument("dogId") {
+                type = NavType.StringType
+            })
+        ) {
+            DogDetailsScreen()
+        }
+    }
+}
+
+@Composable
+fun MainNavHost(navController: NavHostController) {
+    NavHost(navController = navController, startDestination = "dogs") {
+        composable(
+            route = "dogs"
+        ) {
+            DogsScreen(navigateDogDetails = { navController.navigate("dog/${it}") })
+        }
         composable(
             route = "dog/{dogId}",
             arguments = listOf(navArgument("dogId") {

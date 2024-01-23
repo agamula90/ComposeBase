@@ -27,7 +27,7 @@ fun DogDetailsScreen(viewModel: DogDetailsViewModel = koinViewModel()) {
             Column(
                 Modifier
                     .fillMaxSize()
-                    .padding(start = 10.dp)) {
+                    .padding(start = 10.dp, top = 10.dp)) {
                 AsyncImage(
                     model = dog.image,
                     contentDescription = dog.breed.name,
@@ -35,9 +35,9 @@ fun DogDetailsScreen(viewModel: DogDetailsViewModel = koinViewModel()) {
                     contentScale = ContentScale.Crop
                 )
 
-                Text(text = "Name: ${dog.breed.name}", modifier = Modifier.padding(top = 10.dp))
-                Text(text = "Dog usage: ${dog.breed.usage}", modifier = Modifier.padding(top = 10.dp))
-                Text(text = "Temperament: ${dog.breed.temperament}", modifier = Modifier.padding(top = 10.dp))
+                Text(text = "Name: ${dog.breed.name}", modifier = Modifier.padding(top = 5.dp))
+                Text(text = "Dog usage: ${dog.breed.usage}", modifier = Modifier.padding(top = 5.dp))
+                Text(text = "Temperament: ${dog.breed.temperament}", modifier = Modifier.padding(top = 5.dp))
             }
         }
     }
