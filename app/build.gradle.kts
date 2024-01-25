@@ -23,7 +23,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "MAPBOX_TOKEN", "\"${providers.gradleProperty("MAP_DOWNLOADS_TOKEN").get()}\"")
+        }
+
         release {
+            buildConfigField("String", "MAPBOX_TOKEN", "\"${providers.gradleProperty("MAP_DOWNLOADS_TOKEN").get()}\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -40,6 +45,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -76,6 +82,9 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.14.0")
+
+    implementation("com.mapbox.maps:android:11.1.0")
+    implementation("com.mapbox.extension:maps-compose:11.1.0")
 
     val koinVersion = "3.5.3"
     val koinKspVersion = "1.3.0"

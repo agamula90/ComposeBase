@@ -28,6 +28,7 @@ import ua.com.underlake.ui.main.ExclusiveFeatures
 import ua.com.underlake.ui.navDrawerRootDestinationTransition
 import ua.com.underlake.ui.dog.DogsScreen
 import ua.com.underlake.ui.dog.details.DogDetailsScreen
+import ua.com.underlake.ui.dog.places.DogPlacesScreen
 import ua.com.underlake.ui.main.Feature
 import ua.com.underlake.ui.main.Greeting
 
@@ -40,7 +41,8 @@ class MainActivity : ComponentActivity() {
             AppTheme {
                 Column(modifier = Modifier
                     .fillMaxSize()
-                    .statusBarsPadding()) {
+                    .statusBarsPadding()
+                ) {
                     val features = listOf(Feature("BottomBar"), Feature("SideDrawer"), Feature("None"))
                     var checkedFeature by rememberSaveable { mutableStateOf(Feature("None")) }
                     ExclusiveFeatures(
@@ -118,7 +120,7 @@ fun MainNavHostWithBottomBar(navController: NavHostController) {
         composable(
             route = "tab2"
         ) {
-            Greeting(name = "Tab 2")
+            DogsScreen(navigateDogDetails = { navController.navigate("dogPlace/${it}") })
         }
         composable(
             route = "tab3"
@@ -133,6 +135,15 @@ fun MainNavHostWithBottomBar(navController: NavHostController) {
             })
         ) {
             DogDetailsScreen()
+        }
+
+        composable(
+            route = "dogPlace/{dogId}",
+            arguments = listOf(navArgument("dogId") {
+                type = NavType.StringType
+            })
+        ) {
+            DogPlacesScreen()
         }
     }
 }
