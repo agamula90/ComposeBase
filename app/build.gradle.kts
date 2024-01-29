@@ -29,7 +29,7 @@ android {
 
         release {
             buildConfigField("String", "MAPBOX_TOKEN", "\"${providers.gradleProperty("MAP_DOWNLOADS_TOKEN").get()}\"")
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -85,6 +85,8 @@ dependencies {
 
     implementation("com.mapbox.maps:android:11.1.0")
     implementation("com.mapbox.extension:maps-compose:11.1.0")
+    implementation("com.google.android.gms:play-services-location:21.1.0")
+
 
     val koinVersion = "3.5.3"
     val koinKspVersion = "1.3.0"

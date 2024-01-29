@@ -26,12 +26,12 @@ class DogsViewModel(
         getDogs()
     }
 
-    private fun getDogs() = viewModelScope.launch(Dispatchers.IO) {
+    private fun getDogs() = viewModelScope.launch {
         loading.value = true
-        val fetchJob = async(Dispatchers.IO) {
+        val fetchJob = async {
             dogs.value = dogService.getDogs(9).map { Dog(it) }
         }
-        val waitJob = async {
+        val waitJob = async(Dispatchers.IO) {
             delay(MIN_FETCH_TIME)
         }
 

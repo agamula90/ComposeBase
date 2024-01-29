@@ -110,7 +110,7 @@ fun NavHostWithNavDrawer(
                     drawerContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     drawerTonalElevation = 4.dp,
                 ) {
-                    navDrawerItems.forEachIndexed { index, navDrawerItem ->
+                    navDrawerItems.forEach { navDrawerItem ->
                         NavigationDrawerItem(
                             selected = selectedDestination == navDrawerItem,
                             onClick = {

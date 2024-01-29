@@ -22,7 +22,7 @@ fun DogsColumn(
     navigateDogDetails: (String) -> Unit
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize().padding(start = 10.dp), contentPadding = PaddingValues(vertical = 10.dp)) {
-        itemsIndexed(dogs, key = { index, item -> item.id }) { index, item ->
+        itemsIndexed(dogs, key = { _, item -> item.id }) { index, item ->
             AsyncImage(
                 model = item.image,
                 contentDescription = "",
