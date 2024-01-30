@@ -4,12 +4,10 @@ import android.os.Parcelable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.RadioButton
@@ -21,7 +19,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
@@ -40,26 +37,19 @@ fun ExclusiveFeatures(
 ) {
     Column(modifier = Modifier.padding(10.dp)) {
         Text(text = featuresGroup, modifier = Modifier.padding(bottom = 10.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            NoticeableRow(countItems = features.size) {
-                val feature = features[it]
-                Row(
-                    modifier = Modifier
-                        .border(1.dp, Color.Gray, CircleShape)
-                        .clip(CircleShape)
-                        .clickable(onClick = { onFeatureCheckChange(feature) }),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = checkedFeature == feature,
-                        onClick = { onFeatureCheckChange(feature) })
-                    Text(text = feature.title, modifier = Modifier.padding(end = 10.dp))
-                }
+        NoticeableRow(countItems = features.size) {
+            val feature = features[it]
+            Row(
+                modifier = Modifier
+                    .border(1.dp, Color.Gray, CircleShape)
+                    .clip(CircleShape)
+                    .clickable(onClick = { onFeatureCheckChange(feature) }),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = checkedFeature == feature,
+                    onClick = { onFeatureCheckChange(feature) })
+                Text(text = feature.title, modifier = Modifier.padding(end = 10.dp))
             }
         }
     }
@@ -70,13 +60,9 @@ fun NoticeableRow(
     countItems: Int,
     itemContent: @Composable (Int) -> Unit
 ) {
-    val configuration = LocalConfiguration.current
-    //TODO use fillMaxWidth with Layout + parent width
-    val containerWidthDp = configuration.screenWidthDp.dp - 20.dp
-
     Layout(
         modifier = Modifier
-            .width(containerWidthDp)
+            .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
         measurePolicy = { measurables, constraints ->
             val placeables = arrayOfNulls<Placeable?>(measurables.size)
