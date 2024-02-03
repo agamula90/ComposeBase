@@ -2,7 +2,7 @@ Jetpack compose sample with bottom bar navigation, side / navigation drawer navi
 
 Bottom bar navigation consists of:
 - 1st tab: dog list + dog details
-- 2nd tab: dog list + dog place. On dog place screen mapbox sdk used to show dog location.
+- 2nd tab: simple text
 - 3rd tab: simple text
 
 Bottom bar composable has custom clipping logic for animation when item clicked.
